@@ -1,0 +1,35 @@
+source("shap.R") # Funções SHAP
+
+shap_result = shap.score.rank(xgb_model = m$model, 
+                              X_train =m$dtrain,
+                              shap_approx = F
+)
+
+
+var_importance(shap_result, top_n=20) %>% ggsave(filename = "a.png",width = 9, height = 5, dpi = 400, units = "in", device='png')
+
+#xgb.ggplot.importance(importance_matrix = xgb.importance(model = m$model), top_n = 15)
+
+cubic <- function(x) {return((abs(x)^(1/3))*sign(x))}
+
+shap_long = shap.prep(shap = shap_result,
+                      X_train = m$X_mat %>% cubic(), 
+                      start = 11,
+                      end = 20
+)
+
+shap_long_sample <- shap_long %>% group_by(variable) %>% sample_n(200000)
+
+## Plot shap overall metrics
+plot.shap.summary(data_long = shap_long_sample) + ggsave(filename = "a.png",width = 9, height = 5, dpi = 400, units = "in", device='png')
+
+## 
+png("a.png", width = 1344, height = 768, units = "px",pointsize = 22)
+
+xgb.plot.shap(data = m$X_mat, # input data
+              model = m$model, # xgboost model
+              features = names(shap_result$mean_shap_score[1:10]), # only top 10 var
+              n_col = 2, # layout option
+              plot_loess = T # add red line to plot
+)
+dev.off()
