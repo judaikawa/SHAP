@@ -1,0 +1,16 @@
+library(SHAPforxgboost) 
+shap_values <- shap.values(xgb_model = model, X_train = X1)
+# 10 features mais importantes
+Head(shap_values$mean_shap_score,10)
+
+# Gráfico 1
+shap_long <- shap.prep(xgb_model = model, X_train = X1, top_n = 10)
+shap.plot.summary(shap_long_sample, dilute = (1/0.2)) # plotar apenas 20% da base
+
+# Gráfico 2 (do próprio pacote xgboost)
+xgb.plot.shap(data = m$X_mat, # input data
+              model = m$model, # xgboost model
+              features = names(shap_result$mean_shap_score[1:10]), # only top 10 var
+              n_col = 2, # layout option
+              plot_loess = T # add red line to plot
+)
